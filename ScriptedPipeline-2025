@@ -1,0 +1,20 @@
+node('Built-In') {
+    stage('ContinuousDownload') {
+        git branch: 'main', url: 'https://github.com/P2PConcept/payslip.git'
+    }
+    stage('ContinuousBuild') {
+        sh 'mvn package'
+    }
+    stage('ContinuousDeployment') {
+        deploy adapters: [tomcat9(credentialsId: 'a64d5482-ad88-4065-ab97-7ac84392c05c', url: 'http://172.31.83.176:8080')], war: '**/*.war', contextPath: 'testapp'
+    }
+    stage('ContinuousTesting') {
+        git 'https://github.com/P2PConcept/testingcode.git'
+        sh 'java -jar /var/lib/jenkins/workspace/Declerative-Pipeline/testing.jar'
+    }
+    stage('ContinuousDelivery') {
+        git branch: 'main', url: 'https://github.com/P2PConcept/payslip.git'
+        sh 'mvn package'
+        deploy adapters: [tomcat9(credentialsId: 'a64d5482-ad88-4065-ab97-7ac84392c05c', url: 'http://172.31.89.235:8080')], war: '**/*.war', contextPath: 'prodapp'
+    }
+}
